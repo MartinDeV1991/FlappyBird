@@ -8,8 +8,10 @@ class Game {
         this.ratio = this.height / this.baseHeight;
         this.background = new Background(this);
         this.player = new Player(this);
+        this.sound = new AudioControl();
         this.obstacles;
-        this.numberOfObstacles = 2;
+        this.numberOfObstacles = 5;
+        this.debug = true;
 
         this.gravity;
         this.speed;
@@ -36,11 +38,20 @@ class Game {
         this.canvas.addEventListener('mousedown', e => {
             this.player.flap();
         });
+        this.canvas.addEventListener('mouseup', e => {
+            this.player.wingsUp();
+        });
         // keyboard controls
         window.addEventListener('keydown', e => {
             if (e.key === ' ' || e.key === 'Enter') this.player.flap();
             if (e.key === 'Shift' || e.key.toLowerCase() === 'c') this.player.startCharge();
+            if (e.key.toLowerCase() === 'r') this.resize(window.innerWidth, window.innerHeight);
+            if (e.key.toLowerCase() === 'f') this.toggleFullScreen();
+            if (e.key.toLowerCase() === 'd') this.debug = !this.debug;
         });
+        window.addEventListener('keyup', e => {
+            this.player.wingsUp();
+        })
         this.canvas.addEventListener('touchstart', e => {
             this.player.flap();
             this.touchStartX = e.changedTouches[0].pageX;
@@ -55,7 +66,7 @@ class Game {
     resize(width, height) {
         this.canvas.width = width;
         this.canvas.height = height;
-        this.ctx.fillStyle = 'blue';
+        // this.ctx.fillStyle = 'blue';
         this.ctx.font = '15px impact';
         this.ctx.textAlign = 'right';
         this.ctx.lineWidth = 3;
@@ -119,26 +130,33 @@ class Game {
             this.eventUpdate = true;
         }
     }
+    triggerGameOver() {
+        if (this.gameOver) {
+            this.gameOver = true;
+            if (this.obstacles.length <= 0) {
+                this.sound.play(this.sound.win);
+                this.message1 = "Nailed it";
+                this.message2 = "Can you do it faster than " + this.formatTimer() + ' seconds?';
+            } else {
+                this.sound.play(this.sound.lose);
+                this.message1 = "Getting rusty?";
+                this.message2 = "Collision time " + this.formatTimer() + ' seconds';
+            }
+        }
+    }
     drawStatusText() {
         this.ctx.save();
         this.ctx.fillText('Score: ' + this.score, this.width - 10, 30);
         this.ctx.textAlign = 'left';
         this.ctx.fillText('Timer: ' + this.formatTimer(), 10, 30);
         if (this.gameOver) {
-            if (this.player.collided) {
-                this.message1 = "Getting rusty?";
-                this.message2 = "Collision time " + this.formatTimer() + ' seconds';
-            } else if (this.obstacles.length <= 0) {
-                this.message1 = "Nailed it";
-                this.message2 = "Can you do it faster than " + this.formatTimer() + ' seconds?';
-            }
             this.ctx.textAlign = 'center';
             this.ctx.font = '30px impact';
             this.ctx.fillText(this.message1, this.width * 0.5, this.height * 0.5 - 40);
             this.ctx.fillText(this.message2, this.width * 0.5, this.height * 0.5 - 20);
             this.ctx.fillText("Press 'R' to try again!", this.width * 0.5, this.height * 0.5);
         }
-        if (this.player.energy <= 20) this.ctx.fillStyle = 'red';
+        if (this.player.energy <= this.player.minEnergy) this.ctx.fillStyle = 'red';
         else if (this.player.energy >= this.player.maxEnergy) this.ctx.fillStyle = 'orangered';
 
         for (let i = 0; i < this.player.energy; i++) {
