@@ -10,23 +10,25 @@ class Game {
         this.player = new Player(this);
         this.sound = new AudioControl();
         this.obstacles;
-        this.numberOfObstacles = 5;
-        this.debug = true;
-
+        this.numberOfObstacles = 15;
         this.gravity;
         this.speed;
         this.minSpeed;
         this.maxSpeed;
         this.score;
         this.gameOver;
+        this.bottomMargin;
         this.timer;
         this.message1;
         this.message2;
+        this.smallFont;
+        this.largeFont;
         this.eventTimer = 0;
         this.eventInterval = 150;
         this.eventUpdate = false;
         this.touchStartX;
         this.swipeDistance = 50;
+        this.debug = false;
 
         this.resize(window.innerWidth, window.innerHeight);
 
@@ -39,7 +41,9 @@ class Game {
             this.player.flap();
         });
         this.canvas.addEventListener('mouseup', e => {
-            this.player.wingsUp();
+            setTimeout(() => {
+                this.player.wingsUp();
+            }, 50);
         });
         // keyboard controls
         window.addEventListener('keydown', e => {
@@ -57,8 +61,13 @@ class Game {
             this.touchStartX = e.changedTouches[0].pageX;
         });
         this.canvas.addEventListener('touchmove', e => {
+            e.preventDefault();
+        });
+        this.canvas.addEventListener('touchend', e => {
             if (e.changedTouches[0].pageX - this.touchStartX > this.swipeDistance) {
                 this.player.startCharge();
+            } else {
+                this.player.flap();
             }
         });
     }
@@ -67,14 +76,17 @@ class Game {
         this.canvas.width = width;
         this.canvas.height = height;
         // this.ctx.fillStyle = 'blue';
-        this.ctx.font = '15px impact';
         this.ctx.textAlign = 'right';
-        this.ctx.lineWidth = 3;
+        this.ctx.lineWidth = 1;
         this.ctx.strokeStyle = 'white';
         this.width = this.canvas.width;
         this.height = this.canvas.height;
         this.ratio = this.height / this.baseHeight;
 
+        this.bottomMargin = Math.floor(50 * this.ratio);
+        this.smallFont = Math.ceil(20 * this.ratio);
+        this.largeFont = Math.ceil(45 * this.ratio);
+        this.ctx.font = this.smallFont + 'px bungee';
         this.gravity = 0.15 * this.ratio;
         this.speed = 3 * this.ratio;
         this.minSpeed = this.speed;
@@ -131,7 +143,7 @@ class Game {
         }
     }
     triggerGameOver() {
-        if (this.gameOver) {
+        if (!this.gameOver) {
             this.gameOver = true;
             if (this.obstacles.length <= 0) {
                 this.sound.play(this.sound.win);
@@ -146,14 +158,15 @@ class Game {
     }
     drawStatusText() {
         this.ctx.save();
-        this.ctx.fillText('Score: ' + this.score, this.width - 10, 30);
+        this.ctx.fillText('Score: ' + this.score, this.width - 10, this.largeFont);
         this.ctx.textAlign = 'left';
-        this.ctx.fillText('Timer: ' + this.formatTimer(), 10, 30);
+        this.ctx.fillText('Timer: ' + this.formatTimer(), 10, this.largeFont);
         if (this.gameOver) {
             this.ctx.textAlign = 'center';
-            this.ctx.font = '30px impact';
-            this.ctx.fillText(this.message1, this.width * 0.5, this.height * 0.5 - 40);
-            this.ctx.fillText(this.message2, this.width * 0.5, this.height * 0.5 - 20);
+            this.ctx.font = this.largeFont + 'px bungee';
+            this.ctx.fillText(this.message1, this.width * 0.5, this.height * 0.5 - this.largeFont, this.width);
+            this.ctx.font = this.smallFont + 'px bungee';
+            this.ctx.fillText(this.message2, this.width * 0.5, this.height * 0.5 - this.smallFont, this.width);
             this.ctx.fillText("Press 'R' to try again!", this.width * 0.5, this.height * 0.5);
         }
         if (this.player.energy <= this.player.minEnergy) this.ctx.fillStyle = 'red';
@@ -178,7 +191,6 @@ window.addEventListener('load', function () {
     function animate(timeStamp) {
         const deltaTime = timeStamp - lastTime;
         lastTime = timeStamp;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
         game.render(deltaTime);
         requestAnimationFrame(animate);
     }
