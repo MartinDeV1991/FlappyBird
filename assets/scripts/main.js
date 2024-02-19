@@ -31,6 +31,8 @@ class Game {
         this.touchStartX;
         this.swipeDistance = 50;
         this.debug = false;
+        this.playing = false;
+        this.firstFrame = true;
 
         this.resize(window.innerWidth, window.innerHeight);
 
@@ -40,6 +42,7 @@ class Game {
 
         // mouse controls
         this.canvas.addEventListener('mousedown', e => {
+            this.playing = true;
             this.player.flap();
         });
         this.canvas.addEventListener('mouseup', e => {
@@ -48,17 +51,22 @@ class Game {
             }, 50);
         });
         // keyboard controls
+
         window.addEventListener('keydown', e => {
-            if (e.key === ' ' || e.key === 'Enter') this.player.flap();
-            if (e.key === 'Shift' || e.key.toLowerCase() === 'c') this.player.startCharge();
-            if (e.key.toLowerCase() === 'r') this.resize(window.innerWidth, window.innerHeight);
-            if (e.key.toLowerCase() === 'f') this.toggleFullScreen();
-            if (e.key.toLowerCase() === 'd') this.debug = !this.debug;
+            if (e.key.toLowerCase() === 'p') this.playing = !this.playing;
+            else {
+                this.playing = true;
+                if (e.key === ' ' || e.key === 'Enter') this.player.flap();
+                if (e.key === 'Shift' || e.key.toLowerCase() === 'c') this.player.startCharge();
+                if (e.key.toLowerCase() === 'r') this.resize(window.innerWidth, window.innerHeight);
+                if (e.key.toLowerCase() === 'd') this.debug = !this.debug;
+            }
         });
         window.addEventListener('keyup', e => {
             this.player.wingsUp();
         })
         this.canvas.addEventListener('touchstart', e => {
+            this.playing = true;
             this.player.flap();
             this.touchStartX = e.changedTouches[0].pageX;
         });
@@ -104,6 +112,9 @@ class Game {
         this.timer = 0;
     }
     render(deltaTime) {
+        if (!this.playing && !this.firstFrame) return;
+        else this.firstFrame = false;
+
         if (!this.gameOver) this.timer += deltaTime;
         this.handlePeriodicEvents(deltaTime);
         this.background.update();
@@ -196,5 +207,17 @@ window.addEventListener('load', function () {
         game.render(deltaTime);
         requestAnimationFrame(animate);
     }
+
+    let volume = document.getElementById('volume-slider');
+    volume.addEventListener("change", function (e) {
+        game.sound.charge.volume = e.currentTarget.value / 100;
+        game.sound.win.volume = e.currentTarget.value / 100;
+        game.sound.lose.volume = e.currentTarget.value / 100;
+        game.sound.flap1.volume = e.currentTarget.value / 100;
+        game.sound.flap2.volume = e.currentTarget.value / 100;
+        game.sound.flap3.volume = e.currentTarget.value / 100;
+        game.sound.flap4.volume = e.currentTarget.value / 100;
+        game.sound.flap5.volume = e.currentTarget.value / 100;
+    });
     requestAnimationFrame(animate);
 });
