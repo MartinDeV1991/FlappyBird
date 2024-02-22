@@ -35,7 +35,15 @@ class Game {
         this.firstFrame = true;
 
         this.resize(window.innerWidth, window.innerHeight);
-
+        this.resetButton = document.getElementById('resetButton');
+        this.resetButton.addEventListener('click', e => {
+            this.resize(window.innerWidth, window.innerHeight);
+        });
+        this.fullScreenButton = document.getElementById('fullScreenButton');
+        this.fullScreenButton.addEventListener('click', e => {
+            this.toggleFullScreen();
+        })
+        
         window.addEventListener('resize', e => {
             this.resize(e.currentTarget.innerWidth, e.currentTarget.innerHeight);
         });
@@ -60,6 +68,7 @@ class Game {
                 if (e.key === 'Shift' || e.key.toLowerCase() === 'c') this.player.startCharge();
                 if (e.key.toLowerCase() === 'r') this.resize(window.innerWidth, window.innerHeight);
                 if (e.key.toLowerCase() === 'd') this.debug = !this.debug;
+                if (e.key.toLowerCase() === 'f') this.toggleFullScreen();
             }
         });
         window.addEventListener('keyup', e => {
@@ -82,6 +91,13 @@ class Game {
         });
     }
 
+    toggleFullScreen() {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen();
+        } else if (document.exitFullscreen) {
+            document.exitFullscreen();
+        }
+    }
     resize(width, height) {
         this.canvas.width = width;
         this.canvas.height = height;
@@ -186,7 +202,8 @@ class Game {
         else if (this.player.energy >= this.player.maxEnergy) this.ctx.fillStyle = 'orangered';
 
         for (let i = 0; i < this.player.energy; i++) {
-            this.ctx.fillRect(10, this.height - 10 - this.player.barSize * i, this.player.barSize * 5, this.player.barSize * 0.5);
+            // this.ctx.fillRect(10, this.height - 10 - this.player.barSize * i, this.player.barSize * 5, this.player.barSize * 0.5);
+            this.ctx.fillRect(10 + this.player.barSize * i, 70 , this.player.barSize * 0.5, this.player.barSize * 5);
         }
         this.ctx.restore();
     }
