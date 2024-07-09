@@ -43,13 +43,14 @@ class Game {
         this.fullScreenButton.addEventListener('click', e => {
             this.toggleFullScreen();
         })
-        
+
         window.addEventListener('resize', e => {
             this.resize(e.currentTarget.innerWidth, e.currentTarget.innerHeight);
         });
 
         // mouse controls
         this.canvas.addEventListener('mousedown', e => {
+            document.getElementById('instructions').style.display = 'none';
             this.playing = true;
             this.player.flap();
         });
@@ -61,6 +62,7 @@ class Game {
         // keyboard controls
 
         window.addEventListener('keydown', e => {
+            document.getElementById('instructions').style.display = 'none';
             if (e.key.toLowerCase() === 'p') this.playing = !this.playing;
             else {
                 this.playing = true;
@@ -184,6 +186,7 @@ class Game {
                 this.message2 = "Collision time " + this.formatTimer() + ' seconds';
             }
         }
+        document.getElementById('instructions').style.display = 'absolute';
     }
     drawStatusText() {
         this.ctx.save();
@@ -203,7 +206,7 @@ class Game {
 
         for (let i = 0; i < this.player.energy; i++) {
             // this.ctx.fillRect(10, this.height - 10 - this.player.barSize * i, this.player.barSize * 5, this.player.barSize * 0.5);
-            this.ctx.fillRect(10 + this.player.barSize * i, 70 , this.player.barSize * 0.5, this.player.barSize * 5);
+            this.ctx.fillRect(10 + this.player.barSize * i, 70, this.player.barSize * 0.5, this.player.barSize * 5);
         }
         this.ctx.restore();
     }
